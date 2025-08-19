@@ -22,16 +22,20 @@ def main() -> None:
     # Get configuration
     config = get_config()
 
+    # Auto-detect stdio mode when run by MCP clients
+    # FastMCP best practice: detect if stdin is connected to a pipe (MCP client)
+    is_stdio_context = not sys.stdin.isatty() or config.transport_mode == "stdio"
+
     # Check transport mode
-    if config.transport_mode == "stdio":
+    if is_stdio_context:
         print("Starting Versionator MCP Server in STDIO mode", file=sys.stderr)
         app.run(transport="stdio")
     else:
-        print(f"Starting Versionator MCP Server")
-        print(f"Transport: Streamable HTTP (Standard MCP)")
-        print(f"Server will bind to: {config.mcp_host}:{config.mcp_port}")
-        print(f"External access URL: http://{config.external_ip}:{config.mcp_port}")
-        print(f"MCP endpoint: http://{config.external_ip}:{config.mcp_port}/mcp")
+        print(f"Starting Versionator MCP Server", file=sys.stderr)
+        print(f"Transport: Streamable HTTP (Standard MCP)", file=sys.stderr)
+        print(f"Server will bind to: {config.mcp_host}:{config.mcp_port}", file=sys.stderr)
+        print(f"External access URL: http://{config.external_ip}:{config.mcp_port}", file=sys.stderr)
+        print(f"MCP endpoint: http://{config.external_ip}:{config.mcp_port}/mcp", file=sys.stderr)
 
         # Set the host and port environment variables for FastMCP
         os.environ["FASTMCP_HOST"] = config.mcp_host

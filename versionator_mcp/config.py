@@ -26,7 +26,7 @@ def get_config() -> AppConfig:
     mcp_host = os.getenv("FASTMCP_HOST", "0.0.0.0")
     mcp_port = int(os.getenv("FASTMCP_PORT", "8083"))
     external_ip = os.getenv("EXTERNAL_IP", "localhost")
-    transport_mode = os.getenv("MCP_TRANSPORT", "streamable-http")
+    transport_mode = os.getenv("MCP_TRANSPORT", "stdio")
 
     # API configuration
     request_timeout = int(os.getenv("VERSIONATOR_REQUEST_TIMEOUT", "30"))
