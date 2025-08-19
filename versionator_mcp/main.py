@@ -8,6 +8,7 @@ with support for both stdio and streamable HTTP transports.
 
 import os
 import sys
+
 from .app import create_app
 from .config import get_config
 
@@ -22,7 +23,7 @@ def main():
     config = get_config()
 
     # Check transport mode
-    if config.transport_mode == 'stdio':
+    if config.transport_mode == "stdio":
         print("Starting Versionator MCP Server in STDIO mode", file=sys.stderr)
         app.run(transport="stdio")
     else:
@@ -33,12 +34,12 @@ def main():
         print(f"MCP endpoint: http://{config.external_ip}:{config.mcp_port}/mcp")
 
         # Set the host and port environment variables for FastMCP
-        os.environ['FASTMCP_HOST'] = config.mcp_host
-        os.environ['FASTMCP_PORT'] = str(config.mcp_port)
+        os.environ["FASTMCP_HOST"] = config.mcp_host
+        os.environ["FASTMCP_PORT"] = str(config.mcp_port)
 
         # Enable debug logging
-        os.environ['FASTMCP_DEBUG'] = 'true'
-        os.environ['FASTMCP_LOG_LEVEL'] = 'DEBUG'
+        os.environ["FASTMCP_DEBUG"] = "true"
+        os.environ["FASTMCP_LOG_LEVEL"] = "DEBUG"
 
         # Run the server with Streamable HTTP transport (standard for remote MCP servers)
         app.run(transport="streamable-http")

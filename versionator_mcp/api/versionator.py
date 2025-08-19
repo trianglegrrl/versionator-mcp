@@ -6,11 +6,12 @@ Provides functions to query npm, RubyGems, PyPI, and Hex.pm for latest package v
 
 import json
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 import aiohttp
 from fastmcp import FastMCP
-from ..models import PackageVersion
 
+from ..models import PackageVersion
 
 # Module-level configuration
 _request_timeout: int = 30
@@ -44,7 +45,7 @@ async def get_npm_version(package_name: str) -> PackageVersion:
 
     timeout = aiohttp.ClientTimeout(total=_request_timeout)
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        async with session.get(url, headers={'Accept': 'application/json'}) as response:
+        async with session.get(url, headers={"Accept": "application/json"}) as response:
             if response.status == 404:
                 raise Exception(f"Package '{package_name}' not found in npm registry")
             elif response.status != 200:
@@ -55,13 +56,13 @@ async def get_npm_version(package_name: str) -> PackageVersion:
 
             return PackageVersion(
                 name=package_name,
-                version=data.get('version', 'unknown'),
-                registry='npm',
+                version=data.get("version", "unknown"),
+                registry="npm",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + 'Z',
-                description=data.get('description'),
-                homepage=data.get('homepage'),
-                license=data.get('license')
+                query_time=datetime.utcnow().isoformat() + "Z",
+                description=data.get("description"),
+                homepage=data.get("homepage"),
+                license=data.get("license"),
             )
 
 
@@ -98,10 +99,10 @@ async def get_rubygems_version(gem_name: str) -> PackageVersion:
 
             return PackageVersion(
                 name=gem_name,
-                version=data.get('version', 'unknown'),
-                registry='rubygems',
+                version=data.get("version", "unknown"),
+                registry="rubygems",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + 'Z'
+                query_time=datetime.utcnow().isoformat() + "Z",
             )
 
 
@@ -127,7 +128,7 @@ async def get_pypi_version(package_name: str) -> PackageVersion:
 
     timeout = aiohttp.ClientTimeout(total=_request_timeout)
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        async with session.get(url, headers={'Accept': 'application/json'}) as response:
+        async with session.get(url, headers={"Accept": "application/json"}) as response:
             if response.status == 404:
                 raise Exception(f"Package '{package_name}' not found in PyPI registry")
             elif response.status != 200:
@@ -135,17 +136,17 @@ async def get_pypi_version(package_name: str) -> PackageVersion:
                 raise Exception(f"PyPI API error {response.status}: {text}")
 
             data = await response.json()
-            info = data.get('info', {})
+            info = data.get("info", {})
 
             return PackageVersion(
                 name=package_name,
-                version=info.get('version', 'unknown'),
-                registry='pypi',
+                version=info.get("version", "unknown"),
+                registry="pypi",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + 'Z',
-                description=info.get('summary'),
-                homepage=info.get('home_page') or info.get('project_url'),
-                license=info.get('license')
+                query_time=datetime.utcnow().isoformat() + "Z",
+                description=info.get("summary"),
+                homepage=info.get("home_page") or info.get("project_url"),
+                license=info.get("license"),
             )
 
 
@@ -181,22 +182,22 @@ async def get_hex_version(package_name: str) -> PackageVersion:
             data = await response.json()
 
             # Get the latest version from releases array (first item is latest)
-            releases = data.get('releases', [])
+            releases = data.get("releases", [])
             if not releases:
                 raise Exception(f"No releases found for package '{package_name}'")
 
-            latest_version = releases[0].get('version', 'unknown')
-            meta = data.get('meta', {})
+            latest_version = releases[0].get("version", "unknown")
+            meta = data.get("meta", {})
 
             return PackageVersion(
                 name=package_name,
                 version=latest_version,
-                registry='hex',
+                registry="hex",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + 'Z',
-                description=meta.get('description'),
-                homepage=meta.get('links', {}).get('GitHub'),
-                license=', '.join(meta.get('licenses', []))
+                query_time=datetime.utcnow().isoformat() + "Z",
+                description=meta.get("description"),
+                homepage=meta.get("links", {}).get("GitHub"),
+                license=", ".join(meta.get("licenses", [])),
             )
 
 
@@ -222,23 +223,25 @@ async def get_latest_version(package_manager: str, package_name: str) -> Package
 
     # Map common aliases
     registry_map = {
-        'npm': get_npm_version,
-        'node': get_npm_version,
-        'nodejs': get_npm_version,
-        'rubygems': get_rubygems_version,
-        'gem': get_rubygems_version,
-        'ruby': get_rubygems_version,
-        'pypi': get_pypi_version,
-        'pip': get_pypi_version,
-        'python': get_pypi_version,
-        'hex': get_hex_version,
-        'elixir': get_hex_version,
-        'hex.pm': get_hex_version
+        "npm": get_npm_version,
+        "node": get_npm_version,
+        "nodejs": get_npm_version,
+        "rubygems": get_rubygems_version,
+        "gem": get_rubygems_version,
+        "ruby": get_rubygems_version,
+        "pypi": get_pypi_version,
+        "pip": get_pypi_version,
+        "python": get_pypi_version,
+        "hex": get_hex_version,
+        "elixir": get_hex_version,
+        "hex.pm": get_hex_version,
     }
 
     if package_manager not in registry_map:
-        valid_options = ', '.join(sorted(set(registry_map.keys())))
-        raise ValueError(f"Unknown package manager '{package_manager}'. Valid options: {valid_options}")
+        valid_options = ", ".join(sorted(set(registry_map.keys())))
+        raise ValueError(
+            f"Unknown package manager '{package_manager}'. Valid options: {valid_options}"
+        )
 
     return await registry_map[package_manager](package_name)
 
@@ -247,10 +250,7 @@ def register_versionator_api(app: FastMCP) -> None:
     """Register versionator API functions with the MCP app"""
 
     @app.tool()
-    async def get_package_version(
-        package_manager: str,
-        package_name: str
-    ) -> Dict[str, Any]:
+    async def get_package_version(package_manager: str, package_name: str) -> Dict[str, Any]:
         """Get the latest version of a package from the specified registry.
 
         Args:

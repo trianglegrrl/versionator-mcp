@@ -8,13 +8,13 @@ An MCP (Model Context Protocol) server that queries package registries (npm, Rub
 
 ## Features
 
-- 🔍 Query latest versions from npm, RubyGems, PyPI, and Hex.pm
-- 🏷️ Support for language/ecosystem aliases  
-- ⚡ No caching - always returns current latest version
-- 💥 Fail-hard error handling (no fallbacks)
-- 📋 Optional package metadata (description, homepage, license)
-- ⏱️ Configurable request timeout
-- 🖥️ **Optimized for local Claude Desktop integration**
+- Query latest versions from npm, RubyGems, PyPI, and Hex.pm
+- Support for language/ecosystem aliases
+- No caching - always returns current latest version
+- Fail-hard error handling (no fallbacks)
+- Optional package metadata (description, homepage, license)
+- Configurable request timeout
+- **Optimized for local Claude Desktop integration**
 
 ## Quick Start
 
@@ -46,7 +46,7 @@ pipx install versionator-mcp
 
 Add this configuration to your Claude Desktop MCP settings:
 
-**On macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**On macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **On Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
@@ -131,7 +131,7 @@ get_package_version("python", "django")
 ### 2. Registry-Specific Functions
 
 - `get_npm_package(package_name)` - NPM packages
-- `get_ruby_gem(gem_name)` - RubyGems packages  
+- `get_ruby_gem(gem_name)` - RubyGems packages
 - `get_python_package(package_name)` - PyPI packages
 - `get_elixir_package(package_name)` - Hex.pm packages
 
@@ -142,7 +142,7 @@ All functions return a PackageVersion object:
 ```json
 {
   "name": "react",
-  "version": "19.1.1", 
+  "version": "19.1.1",
   "registry": "npm",
   "registry_url": "https://registry.npmjs.org/react/latest",
   "query_time": "2025-08-13T10:30:00Z",

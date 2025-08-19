@@ -9,7 +9,9 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+
 from fastmcp import FastMCP
+
 from .config import get_config
 
 
@@ -22,8 +24,7 @@ def create_app() -> FastMCP:
 
         # Setup logging
         logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         logger = logging.getLogger("versionator-mcp-server")
 
@@ -34,7 +35,9 @@ def create_app() -> FastMCP:
             logger.info(f"Versionator MCP Server starting...")
             logger.info(f"Request timeout: {config.request_timeout}s")
             logger.info(f"Supported registries: npm, rubygems, pypi, hex")
-            logger.info(f"Available functions: get_package_version, get_npm_package, get_ruby_gem, get_python_package, get_elixir_package")
+            logger.info(
+                f"Available functions: get_package_version, get_npm_package, get_ruby_gem, get_python_package, get_elixir_package"
+            )
 
             yield
 
@@ -61,14 +64,11 @@ def create_app() -> FastMCP:
     )
 
     # Create the FastMCP application
-    app = FastMCP(
-        "versionator-mcp-server",
-        instructions=instructions,
-        lifespan=lifespan
-    )
+    app = FastMCP("versionator-mcp-server", instructions=instructions, lifespan=lifespan)
 
     # Import and register API functions
     from .api.versionator import register_versionator_api
+
     register_versionator_api(app)
 
     # Add health check endpoint
@@ -78,17 +78,16 @@ def create_app() -> FastMCP:
         return {
             "status": "healthy",
             "service": "versionator-mcp-server",
-            "timestamp": asyncio.get_event_loop().time()
+            "timestamp": asyncio.get_event_loop().time(),
         }
 
     # Also expose a reusable prompt template via FastMCP prompts API
-    @app.prompt(name="versionator_usage_guide", title="Versionator MCP Usage Guide", description="How to use Versionator tools effectively")
+    @app.prompt(
+        name="versionator_usage_guide",
+        title="Versionator MCP Usage Guide",
+        description="How to use Versionator tools effectively",
+    )
     def versionator_usage_guide() -> list[dict]:
-        return [
-            {
-                "role": "system",
-                "content": instructions
-            }
-        ]
+        return [{"role": "system", "content": instructions}]
 
     return app

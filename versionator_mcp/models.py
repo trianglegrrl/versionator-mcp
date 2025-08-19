@@ -5,6 +5,7 @@ Defines Pydantic models for package version information.
 """
 
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -32,7 +33,7 @@ class PackageVersion(BaseModel):
                 "query_time": "2024-01-15T10:30:00Z",
                 "description": "React is a JavaScript library for building user interfaces.",
                 "homepage": "https://react.dev/",
-                "license": "MIT"
+                "license": "MIT",
             }
         }
     }
