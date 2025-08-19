@@ -34,7 +34,9 @@ def main() -> None:
         print(f"Starting Versionator MCP Server", file=sys.stderr)
         print(f"Transport: Streamable HTTP (Standard MCP)", file=sys.stderr)
         print(f"Server will bind to: {config.mcp_host}:{config.mcp_port}", file=sys.stderr)
-        print(f"External access URL: http://{config.external_ip}:{config.mcp_port}", file=sys.stderr)
+        print(
+            f"External access URL: http://{config.external_ip}:{config.mcp_port}", file=sys.stderr
+        )
         print(f"MCP endpoint: http://{config.external_ip}:{config.mcp_port}/mcp", file=sys.stderr)
 
         # Set the host and port environment variables for FastMCP
