@@ -1,74 +1,105 @@
 # Versionator MCP Server
 
+[![CI Pipeline](https://github.com/trianglegrrl/versionator-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/trianglegrrl/versionator-mcp/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/versionator-mcp.svg)](https://badge.fury.io/py/versionator-mcp)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
 An MCP (Model Context Protocol) server that queries package registries (npm, RubyGems, PyPI, Hex.pm) to retrieve the latest release versions of packages. It follows a strict fail-hard policy and always returns current data.
 
 ## Features
 
-- Query latest versions from npm, RubyGems, PyPI, and Hex.pm
-- Support for language/ecosystem aliases  
-- No caching - always returns current latest version
-- Fail-hard error handling (no fallbacks)
-- Optional package metadata (description, homepage, license)
-- Configurable request timeout
-- Supports both stdio and HTTP transports
+- 🔍 Query latest versions from npm, RubyGems, PyPI, and Hex.pm
+- 🏷️ Support for language/ecosystem aliases  
+- ⚡ No caching - always returns current latest version
+- 💥 Fail-hard error handling (no fallbacks)
+- 📋 Optional package metadata (description, homepage, license)
+- ⏱️ Configurable request timeout
+- 🖥️ **Optimized for local Claude Desktop integration**
 
-## Installation
+## Quick Start
 
-### From PyPI (recommended)
+### Option 1: Using uvx (Recommended)
+
+The easiest way to use Versionator with Claude Desktop is via [uvx](https://github.com/astral-sh/uv):
 
 ```bash
+# Install uvx if you haven't already
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Run Versionator directly with uvx
+uvx versionator-mcp
+```
+
+### Option 2: Install Locally
+
+```bash
+# Install from PyPI
 pip install versionator-mcp
+
+# Or install with pipx for isolated environment
+pipx install versionator-mcp
 ```
 
-### From Source
+## Claude Desktop Integration
 
-```bash
-git clone https://github.com/trianglegrrl/versionator-mcp.git
-cd versionator-mcp
-pip install -e .
-```
+### Method 1: Using uvx (Recommended)
 
-## Usage
+Add this configuration to your Claude Desktop MCP settings:
 
-### As a Standalone Server
-
-```bash
-# Start with HTTP transport (default port 8083)
-python -m versionator_mcp.main
-
-# Start with stdio transport
-MCP_TRANSPORT=stdio python -m versionator_mcp.main
-
-# Custom port
-FASTMCP_PORT=9000 python -m versionator_mcp.main
-```
-
-### Integration with Claude Desktop
-
-Add to your Claude Desktop MCP configuration:
+**On macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**On Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "versionator": {
-      "url": "http://localhost:8083/mcp",
-      "transport": "http"
+      "command": "uvx",
+      "args": ["versionator-mcp"]
     }
   }
 }
 ```
 
-For remote deployments, replace `localhost` with your server's IP address.
+### Method 2: Using pipx
 
-## Configuration
+```json
+{
+  "mcpServers": {
+    "versionator": {
+      "command": "pipx",
+      "args": ["run", "versionator-mcp"]
+    }
+  }
+}
+```
 
-Environment variables:
+### Method 3: Direct Python execution
 
-- `FASTMCP_HOST`: Server bind address (default: 0.0.0.0)
-- `FASTMCP_PORT`: Server port (default: 8083)
-- `EXTERNAL_IP`: External IP for access (default: localhost)
-- `MCP_TRANSPORT`: Transport mode (default: streamable-http, can be: stdio)
-- `VERSIONATOR_REQUEST_TIMEOUT`: API request timeout in seconds (default: 30)
+```json
+{
+  "mcpServers": {
+    "versionator": {
+      "command": "python",
+      "args": ["-m", "versionator_mcp.main"]
+    }
+  }
+}
+```
+
+### Method 4: Using virtual environment
+
+If you have the package installed in a specific virtual environment:
+
+```json
+{
+  "mcpServers": {
+    "versionator": {
+      "command": "/path/to/your/venv/bin/python",
+      "args": ["-m", "versionator_mcp.main"]
+    }
+  }
+}
+```
 
 ## Available Functions
 
@@ -134,6 +165,64 @@ Common errors:
 - `ValueError`: Invalid package name or unknown package manager
 - `Exception`: Package not found or API failures
 
+## Configuration
+
+Environment variables (optional):
+
+- `VERSIONATOR_REQUEST_TIMEOUT`: API request timeout in seconds (default: 30)
+
+## Troubleshooting
+
+### Claude Desktop Issues
+
+1. **Server not starting**: Check that the command path is correct in your configuration
+2. **Permission errors**: Ensure the Python executable has proper permissions
+3. **Package not found**: Verify the package is installed and accessible from the command line
+
+### Testing Your Setup
+
+You can test the server directly from the command line:
+
+```bash
+# Test with uvx
+uvx versionator-mcp
+
+# Test with pipx
+pipx run versionator-mcp
+
+# Test direct installation
+python -m versionator_mcp.main
+```
+
+The server should start and show initialization messages. Press `Ctrl+C` to stop.
+
+## Alternative: HTTP Server Mode
+
+For advanced use cases, you can run Versionator as an HTTP server:
+
+```bash
+# Start HTTP server (default port 8083)
+FASTMCP_PORT=8083 python -m versionator_mcp.main
+
+# Custom port
+FASTMCP_PORT=9000 python -m versionator_mcp.main
+```
+
+Then configure Claude Desktop with:
+
+```json
+{
+  "mcpServers": {
+    "versionator": {
+      "url": "http://localhost:8083/mcp",
+      "transport": "http"
+    }
+  }
+}
+```
+
+**Note**: HTTP mode requires manually starting the server before using Claude Desktop.
+
 ## Development
 
 ### Setup
@@ -143,51 +232,41 @@ Common errors:
 git clone https://github.com/trianglegrrl/versionator-mcp.git
 cd versionator-mcp
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install in development mode
-pip install -e .
+# Install in development mode with dev dependencies
+pip install -e ".[dev]"
 ```
 
 ### Running Tests
 
 ```bash
-# Install test dependencies
-pip install pytest pytest-asyncio pytest-cov
-
 # Run tests
 pytest
 
 # Run tests with coverage
 pytest --cov=versionator_mcp
+
+# Run linting
+black --check .
+isort --check-only .
+mypy versionator_mcp/
 ```
 
-### Testing the Server
+### Testing the MCP Server
 
 ```bash
-# Test HTTP transport
-python -m versionator_mcp.main &
-curl -X POST http://localhost:8083/mcp/ \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
-
-# Test stdio transport  
-echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | MCP_TRANSPORT=stdio python -m versionator_mcp.main
+# Test stdio transport (default)
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | python -m versionator_mcp.main
 ```
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+3. Make your changes and add tests
+4. Run the test suite (`pytest`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
 ## Registry APIs
 
@@ -205,11 +284,16 @@ The server queries these endpoints:
 - **Concurrent Requests**: Async implementation allows parallel queries
 - **Rate Limits**: Be mindful of registry rate limits
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ## Changelog
 
 ### v1.0.0
 - Initial release
 - Support for npm, RubyGems, PyPI, and Hex.pm
-- HTTP and stdio transport modes
+- Optimized for Claude Desktop integration
+- uvx and pipx support
 - Comprehensive error handling
 - MCP protocol compliance
