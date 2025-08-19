@@ -40,14 +40,43 @@ pip install versionator-mcp
 pipx install versionator-mcp
 ```
 
-## Claude Desktop Integration
+## Editor Integration
 
-### Method 1: Using uvx (Recommended)
+### Claude Desktop
 
-Add this configuration to your Claude Desktop MCP settings:
+Add configuration to your Claude Desktop MCP settings:
 
-**On macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**On Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Config Location:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Recommended (uvx):**
+```json
+{
+  "mcpServers": {
+    "versionator": {
+      "command": "uvx",
+      "args": ["versionator-mcp"]
+    }
+  }
+}
+```
+
+**Alternative methods:**
+```json
+{
+  "mcpServers": {
+    "versionator": {
+      "command": "pipx",
+      "args": ["run", "versionator-mcp"]
+    }
+  }
+}
+```
+
+### Cursor
+
+Create `.cursor/mcp.json` in your project root:
 
 ```json
 {
@@ -60,46 +89,41 @@ Add this configuration to your Claude Desktop MCP settings:
 }
 ```
 
-### Method 2: Using pipx
+**Global configuration**: `~/.cursor/mcp.json`
+
+### Windsurf
+
+Edit `~/.codeium/mcp_config.json`:
 
 ```json
 {
   "mcpServers": {
     "versionator": {
-      "command": "pipx",
-      "args": ["run", "versionator-mcp"]
+      "command": "uvx",
+      "args": ["versionator-mcp"]
     }
   }
 }
 ```
 
-### Method 3: Direct Python execution
+**UI Method**: Settings → Tools → Windsurf Settings → Add Server
+
+### Claude Code
+
+Add to your Claude Code MCP configuration:
 
 ```json
 {
   "mcpServers": {
     "versionator": {
-      "command": "python",
-      "args": ["-m", "versionator_mcp.main"]
+      "command": "uvx",
+      "args": ["versionator-mcp"]
     }
   }
 }
 ```
 
-### Method 4: Using virtual environment
-
-If you have the package installed in a specific virtual environment:
-
-```json
-{
-  "mcpServers": {
-    "versionator": {
-      "command": "/path/to/your/venv/bin/python",
-      "args": ["-m", "versionator_mcp.main"]
-    }
-  }
-}
-```
+> 📁 **Example configs**: See [`examples/`](examples/) directory for complete configuration files
 
 ## Available Functions
 
@@ -173,11 +197,12 @@ Environment variables (optional):
 
 ## Troubleshooting
 
-### Claude Desktop Issues
+### Common MCP Issues
 
 1. **Server not starting**: Check that the command path is correct in your configuration
-2. **Permission errors**: Ensure the Python executable has proper permissions
+2. **Permission errors**: Ensure the Python executable has proper permissions  
 3. **Package not found**: Verify the package is installed and accessible from the command line
+4. **Editor not detecting server**: Restart your editor after adding MCP configuration
 
 ### Testing Your Setup
 
