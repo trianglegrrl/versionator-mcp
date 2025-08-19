@@ -5,7 +5,7 @@ Provides functions to query npm, RubyGems, PyPI, and Hex.pm for latest package v
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import aiohttp
@@ -59,7 +59,7 @@ async def get_npm_version(package_name: str) -> PackageVersion:
                 version=data.get("version", "unknown"),
                 registry="npm",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + "Z",
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
                 description=data.get("description"),
                 homepage=data.get("homepage"),
                 license=data.get("license"),
@@ -102,7 +102,10 @@ async def get_rubygems_version(gem_name: str) -> PackageVersion:
                 version=data.get("version", "unknown"),
                 registry="rubygems",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + "Z",
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=None,
+                homepage=None,
+                license=None,
             )
 
 
@@ -143,7 +146,7 @@ async def get_pypi_version(package_name: str) -> PackageVersion:
                 version=info.get("version", "unknown"),
                 registry="pypi",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + "Z",
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
                 description=info.get("summary"),
                 homepage=info.get("home_page") or info.get("project_url"),
                 license=info.get("license"),
@@ -194,7 +197,7 @@ async def get_hex_version(package_name: str) -> PackageVersion:
                 version=latest_version,
                 registry="hex",
                 registry_url=url,
-                query_time=datetime.utcnow().isoformat() + "Z",
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
                 description=meta.get("description"),
                 homepage=meta.get("links", {}).get("GitHub"),
                 license=", ".join(meta.get("licenses", [])),

@@ -13,7 +13,7 @@ from .app import create_app
 from .config import get_config
 
 
-def main():
+def main() -> None:
     """Main entry point for the Versionator MCP server."""
 
     # Create the application
