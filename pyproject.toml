@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "versionator-mcp"
-version = "1.0.2"
+version = "1.0.3"
 description = "An MCP server that queries package registries (npm, RubyGems, PyPI, Hex.pm) for latest package versions"
 readme = "README.md"
 license = {text = "MIT"}
