@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ci-passed: ${{ steps.check-status.outputs.ci-passed }}
-    
+
     steps:
     - name: Check CI status on main branch
       id: check-status
@@ -20,16 +20,16 @@ jobs:
         # Get the latest CI run for main branch
         latest_run=$(gh api repos/${{ github.repository }}/actions/workflows/ci.yml/runs \
           --jq '.workflow_runs | map(select(.head_branch == "main")) | .[0]')
-        
+
         if [ "$latest_run" = "null" ]; then
           echo "No CI runs found for main branch"
           echo "ci-passed=false" >> $GITHUB_OUTPUT
           exit 1
         fi
-        
+
         status=$(echo "$latest_run" | jq -r '.conclusion')
         echo "Latest CI status on main: $status"
-        
+
         if [ "$status" = "success" ]; then
           echo "ci-passed=true" >> $GITHUB_OUTPUT
           echo "✅ CI is passing on main branch"

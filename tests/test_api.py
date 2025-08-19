@@ -261,8 +261,8 @@ async def test_get_latest_version_aliases():
 @pytest.mark.asyncio
 async def test_get_latest_version_invalid_manager():
     """Test get_latest_version with invalid package manager"""
-    with pytest.raises(ValueError, match="Unknown package manager 'cargo'"):
-        await get_latest_version("cargo", "tokio")
+    with pytest.raises(ValueError, match="Unknown package manager 'invalid-registry'"):
+        await get_latest_version("invalid-registry", "some-package")
 
 
 @pytest.mark.asyncio
@@ -280,3 +280,272 @@ def test_set_request_timeout():
     set_request_timeout(60)
     # This test just verifies the function doesn't crash
     # The actual timeout is used internally in the module
+
+
+# =============================================================================
+# NEW PACKAGE MANAGER TESTS (TDD - These should FAIL initially)
+# =============================================================================
+
+
+# Rust (crates.io) Tests
+@pytest.mark.asyncio
+async def test_get_crates_version_success():
+    """Test successful crates.io version retrieval"""
+    from versionator_mcp.api.versionator import get_crates_version
+
+    result = await get_crates_version("serde")
+    assert result.name == "serde"
+    assert result.version is not None
+    assert result.registry == "crates"
+    assert "crates.io" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_crates_version_not_found():
+    """Test crates.io package not found"""
+    from versionator_mcp.api.versionator import get_crates_version
+
+    with pytest.raises(Exception, match="Crate 'nonexistent-crate-12345' not found"):
+        await get_crates_version("nonexistent-crate-12345")
+
+
+@pytest.mark.asyncio
+async def test_get_crates_version_empty_name():
+    """Test crates.io with empty package name"""
+    from versionator_mcp.api.versionator import get_crates_version
+
+    with pytest.raises(ValueError, match="Crate name cannot be empty"):
+        await get_crates_version("")
+
+
+# Bioconda Tests
+@pytest.mark.asyncio
+async def test_get_bioconda_version_success():
+    """Test successful Bioconda version retrieval"""
+    from versionator_mcp.api.versionator import get_bioconda_version
+
+    result = await get_bioconda_version("samtools")
+    assert result.name == "samtools"
+    assert result.version is not None
+    assert result.registry == "bioconda"
+    assert "anaconda.org" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_bioconda_version_not_found():
+    """Test Bioconda package not found"""
+    from versionator_mcp.api.versionator import get_bioconda_version
+
+    with pytest.raises(Exception, match="Package 'nonexistent-bio-package' not found"):
+        await get_bioconda_version("nonexistent-bio-package")
+
+
+@pytest.mark.asyncio
+async def test_get_bioconda_version_empty_name():
+    """Test Bioconda with empty package name"""
+    from versionator_mcp.api.versionator import get_bioconda_version
+
+    with pytest.raises(ValueError, match="Package name cannot be empty"):
+        await get_bioconda_version("")
+
+
+# R (CRAN) Tests
+@pytest.mark.asyncio
+async def test_get_cran_version_success():
+    """Test successful CRAN version retrieval"""
+    from versionator_mcp.api.versionator import get_cran_version
+
+    result = await get_cran_version("ggplot2")
+    assert result.name == "ggplot2"
+    assert result.version is not None
+    assert result.registry == "cran"
+    assert "crandb.r-pkg.org" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_cran_version_not_found():
+    """Test CRAN package not found"""
+    from versionator_mcp.api.versionator import get_cran_version
+
+    with pytest.raises(Exception, match="Package 'nonexistent-r-package' not found"):
+        await get_cran_version("nonexistent-r-package")
+
+
+@pytest.mark.asyncio
+async def test_get_cran_version_empty_name():
+    """Test CRAN with empty package name"""
+    from versionator_mcp.api.versionator import get_cran_version
+
+    with pytest.raises(ValueError, match="Package name cannot be empty"):
+        await get_cran_version("")
+
+
+# Terraform Registry Tests
+@pytest.mark.asyncio
+async def test_get_terraform_version_success():
+    """Test successful Terraform Registry version retrieval"""
+    from versionator_mcp.api.versionator import get_terraform_version
+
+    result = await get_terraform_version("hashicorp/aws")
+    assert result.name == "hashicorp/aws"
+    assert result.version is not None
+    assert result.registry == "terraform"
+    assert "registry.terraform.io" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_terraform_version_not_found():
+    """Test Terraform Registry provider not found"""
+    from versionator_mcp.api.versionator import get_terraform_version
+
+    with pytest.raises(Exception, match="Provider 'nonexistent/provider' not found"):
+        await get_terraform_version("nonexistent/provider")
+
+
+@pytest.mark.asyncio
+async def test_get_terraform_version_empty_name():
+    """Test Terraform Registry with empty provider name"""
+    from versionator_mcp.api.versionator import get_terraform_version
+
+    with pytest.raises(ValueError, match="Provider name cannot be empty"):
+        await get_terraform_version("")
+
+
+# DockerHub Tests
+@pytest.mark.asyncio
+async def test_get_dockerhub_version_success():
+    """Test successful DockerHub version retrieval"""
+    from versionator_mcp.api.versionator import get_dockerhub_version
+
+    result = await get_dockerhub_version("nginx")
+    assert result.name == "nginx"
+    assert result.version is not None
+    assert result.registry == "dockerhub"
+    assert "hub.docker.com" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_dockerhub_version_not_found():
+    """Test DockerHub image not found"""
+    from versionator_mcp.api.versionator import get_dockerhub_version
+
+    with pytest.raises(Exception, match="Image 'nonexistent-docker-image' not found"):
+        await get_dockerhub_version("nonexistent-docker-image")
+
+
+@pytest.mark.asyncio
+async def test_get_dockerhub_version_empty_name():
+    """Test DockerHub with empty image name"""
+    from versionator_mcp.api.versionator import get_dockerhub_version
+
+    with pytest.raises(ValueError, match="Image name cannot be empty"):
+        await get_dockerhub_version("")
+
+
+# Perl (CPAN) Tests
+@pytest.mark.asyncio
+async def test_get_cpan_version_success():
+    """Test successful CPAN version retrieval"""
+    from versionator_mcp.api.versionator import get_cpan_version
+
+    result = await get_cpan_version("JSON")
+    assert result.name == "JSON"
+    assert result.version is not None
+    assert result.registry == "cpan"
+    assert "metacpan.org" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_cpan_version_not_found():
+    """Test CPAN module not found"""
+    from versionator_mcp.api.versionator import get_cpan_version
+
+    with pytest.raises(Exception, match="Module 'NonExistentPerlModule' not found"):
+        await get_cpan_version("NonExistentPerlModule")
+
+
+@pytest.mark.asyncio
+async def test_get_cpan_version_empty_name():
+    """Test CPAN with empty module name"""
+    from versionator_mcp.api.versionator import get_cpan_version
+
+    with pytest.raises(ValueError, match="Module name cannot be empty"):
+        await get_cpan_version("")
+
+
+# Go Modules Tests
+@pytest.mark.asyncio
+async def test_get_go_version_success():
+    """Test successful Go module version retrieval"""
+    from versionator_mcp.api.versionator import get_go_version
+
+    result = await get_go_version("github.com/gin-gonic/gin")
+    assert result.name == "github.com/gin-gonic/gin"
+    assert result.version is not None
+    assert result.registry == "go"
+    assert "github.com" in result.registry_url or "pkg.go.dev" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_go_version_not_found():
+    """Test Go module not found"""
+    from versionator_mcp.api.versionator import get_go_version
+
+    with pytest.raises(Exception, match="Module 'github.com/nonexistent/module' not found"):
+        await get_go_version("github.com/nonexistent/module")
+
+
+@pytest.mark.asyncio
+async def test_get_go_version_empty_name():
+    """Test Go modules with empty module path"""
+    from versionator_mcp.api.versionator import get_go_version
+
+    with pytest.raises(ValueError, match="Module path cannot be empty"):
+        await get_go_version("")
+
+
+# Generic function tests for new registries
+@pytest.mark.asyncio
+async def test_get_latest_version_new_registries():
+    """Test get_latest_version with new registry aliases"""
+    # Test Rust aliases
+    rust_aliases = ["crates", "cargo", "rust"]
+    for alias in rust_aliases:
+        result = await get_latest_version(alias, "serde")
+        assert result.registry == "crates"
+
+    # Test Bioconda aliases
+    bioconda_aliases = ["bioconda", "conda"]
+    for alias in bioconda_aliases:
+        result = await get_latest_version(alias, "samtools")
+        assert result.registry == "bioconda"
+
+    # Test R aliases
+    r_aliases = ["cran", "r"]
+    for alias in r_aliases:
+        result = await get_latest_version(alias, "ggplot2")
+        assert result.registry == "cran"
+
+    # Test Terraform aliases
+    terraform_aliases = ["terraform", "tf"]
+    for alias in terraform_aliases:
+        result = await get_latest_version(alias, "hashicorp/aws")
+        assert result.registry == "terraform"
+
+    # Test DockerHub aliases
+    docker_aliases = ["dockerhub", "docker"]
+    for alias in docker_aliases:
+        result = await get_latest_version(alias, "nginx")
+        assert result.registry == "dockerhub"
+
+    # Test Perl aliases
+    perl_aliases = ["cpan", "perl"]
+    for alias in perl_aliases:
+        result = await get_latest_version(alias, "JSON")
+        assert result.registry == "cpan"
+
+    # Test Go aliases
+    go_aliases = ["go", "golang"]
+    for alias in go_aliases:
+        result = await get_latest_version(alias, "github.com/gin-gonic/gin")
+        assert result.registry == "go"

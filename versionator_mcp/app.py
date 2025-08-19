@@ -34,9 +34,11 @@ def create_app() -> FastMCP:
 
             logger.info(f"Versionator MCP Server starting...")
             logger.info(f"Request timeout: {config.request_timeout}s")
-            logger.info(f"Supported registries: npm, rubygems, pypi, hex")
             logger.info(
-                f"Available functions: get_package_version, get_npm_package, get_ruby_gem, get_python_package, get_elixir_package"
+                f"Supported registries: npm, rubygems, pypi, hex, crates, bioconda, cran, terraform, dockerhub, cpan, go"
+            )
+            logger.info(
+                f"Available functions: get_package_version, get_npm_package, get_ruby_gem, get_python_package, get_elixir_package, get_rust_crate, get_bioconda_package, get_r_package, get_terraform_provider, get_docker_image, get_perl_module, get_go_module"
             )
 
             yield
@@ -58,7 +60,14 @@ def create_app() -> FastMCP:
         "   - get_ruby_gem(gem_name) for Ruby gems\n"
         "   - get_python_package(package_name) for PyPI packages\n"
         "   - get_elixir_package(package_name) for Hex packages\n"
-        "4) Supported package managers: npm, rubygems, pypi, hex\n"
+        "   - get_rust_crate(crate_name) for Rust crates\n"
+        "   - get_bioconda_package(package_name) for Bioconda packages\n"
+        "   - get_r_package(package_name) for R/CRAN packages\n"
+        "   - get_terraform_provider(provider_path) for Terraform providers\n"
+        "   - get_docker_image(image_name) for Docker images\n"
+        "   - get_perl_module(module_name) for Perl/CPAN modules\n"
+        "   - get_go_module(module_path) for Go modules\n"
+        "4) Supported package managers: npm, rubygems, pypi, hex, crates, bioconda, cran, terraform, dockerhub, cpan, go\n"
         "5) Always specify the exact package name you want to query.\n"
         "6) Present version information clearly with package name, version, and registry.\n"
     )
