@@ -2,7 +2,7 @@
 
 [![CI Pipeline](https://github.com/trianglegrrl/versionator-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/trianglegrrl/versionator-mcp/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/versionator-mcp.svg)](https://badge.fury.io/py/versionator-mcp)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
 An MCP (Model Context Protocol) server that queries package registries (npm, RubyGems, PyPI, Hex.pm) to retrieve the latest release versions of packages. It follows a strict fail-hard policy and always returns current data.
 
@@ -200,7 +200,7 @@ Environment variables (optional):
 ### Common MCP Issues
 
 1. **Server not starting**: Check that the command path is correct in your configuration
-2. **Permission errors**: Ensure the Python executable has proper permissions  
+2. **Permission errors**: Ensure the Python executable has proper permissions
 3. **Package not found**: Verify the package is installed and accessible from the command line
 4. **Editor not detecting server**: Restart your editor after adding MCP configuration
 
