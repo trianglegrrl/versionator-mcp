@@ -41,7 +41,7 @@ class MCPClient:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            cwd="/Users/alaina/projects/versionator-mcp",
+            cwd=".",
         )
 
     def send_request(self, method: str, params: Dict[str, Any] = None) -> Dict[str, Any]:

@@ -9,7 +9,7 @@ description = "An MCP server that queries package registries across 19 different
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Alaina Harmon", email = "alaina@trianglegrrl.com"}
+    {name = "Alaina Hardie", email = "alainahardie@gmail.com"}
 ]
 keywords = ["mcp", "model-context-protocol", "package-manager", "npm", "pypi", "rubygems", "hex"]
 classifiers = [
