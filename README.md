@@ -4,11 +4,11 @@
 [![PyPI version](https://badge.fury.io/py/versionator-mcp.svg)](https://badge.fury.io/py/versionator-mcp)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-An MCP (Model Context Protocol) server that queries package registries across 11 different ecosystems to retrieve the latest release versions of packages. It follows a strict fail-hard policy and always returns current data.
+An MCP (Model Context Protocol) server that queries package registries across 17 different ecosystems to retrieve the latest release versions of packages. It follows a strict fail-hard policy and always returns current data.
 
 ## Features
 
-- **11 Package Registries**: npm, RubyGems, PyPI, Hex.pm, crates.io, Bioconda, CRAN, Terraform Registry, DockerHub, CPAN, Go modules
+- **17 Package Registries**: npm, RubyGems, PyPI, Hex.pm, crates.io, Bioconda, CRAN, Terraform Registry, DockerHub, CPAN, Go modules, Composer, NuGet, Homebrew, Nextflow, Swift Package Manager, Maven Central
 - **Language/Ecosystem Aliases**: Use familiar names like `python`, `rust`, `go`, etc.
 - **No Caching**: Always returns current latest version
 - **Fail-Hard Error Handling**: No fallbacks or stale data
@@ -156,6 +156,12 @@ Query the latest version from any supported registry.
 - `dockerhub` (aliases: `docker`) - Docker images
 - `cpan` (aliases: `perl`) - Perl modules
 - `go` (aliases: `golang`) - Go modules
+- `composer` (aliases: `php`, `packagist`) - PHP packages
+- `nuget` (aliases: `dotnet`, `.net`) - .NET packages
+- `homebrew` (aliases: `brew`) - macOS packages
+- `nextflow` (aliases: `nf-core`) - Nextflow pipelines
+- `swift` (aliases: `spm`) - Swift packages
+- `maven` (aliases: `mvn`) - Java artifacts
 
 **Examples:**
 ```python
@@ -170,6 +176,12 @@ get_package_version("go", "github.com/gin-gonic/gin")
 get_package_version("terraform", "hashicorp/aws")
 get_package_version("docker", "nginx")
 get_package_version("r", "ggplot2")
+get_package_version("php", "symfony/console")
+get_package_version("dotnet", "Newtonsoft.Json")
+get_package_version("homebrew", "git")
+get_package_version("nextflow", "nf-core/rnaseq")
+get_package_version("swift", "apple/swift-package-manager")
+get_package_version("maven", "org.springframework:spring-core")
 ```
 
 ### 2. Registry-Specific Functions
@@ -185,6 +197,12 @@ get_package_version("r", "ggplot2")
 - `get_docker_image(image_name)` - Docker images
 - `get_perl_module(module_name)` - Perl modules
 - `get_go_module(module_path)` - Go modules
+- `get_php_package(package_name)` - PHP/Composer packages
+- `get_dotnet_package(package_name)` - .NET/NuGet packages
+- `get_homebrew_formula(formula_name)` - Homebrew formulas
+- `get_nextflow_pipeline(pipeline_name)` - Nextflow pipelines
+- `get_swift_package(package_name)` - Swift packages
+- `get_maven_artifact(artifact_name)` - Maven artifacts
 
 ## Response Format
 
@@ -223,6 +241,12 @@ chmod +x vmcp
 ./vmcp perl JSON              # Query CPAN
 ./vmcp r ggplot2              # Query CRAN
 ./vmcp bioconda samtools      # Query Bioconda
+./vmcp php symfony/console    # Query Packagist for PHP packages
+./vmcp dotnet Newtonsoft.Json # Query NuGet for .NET packages
+./vmcp homebrew git           # Query Homebrew formulas
+./vmcp nextflow nf-core/rnaseq # Query Nextflow pipelines
+./vmcp swift apple/swift-package-manager # Query Swift packages
+./vmcp maven org.springframework:spring-core # Query Maven Central
 
 # List all available MCP tools
 ./vmcp --list-tools
@@ -379,6 +403,12 @@ The server queries these endpoints:
 - **DockerHub**: `https://hub.docker.com/v2/repositories/{namespace}/{repo}/tags`
 - **CPAN**: `https://fastapi.metacpan.org/v1/module/{module}`
 - **Go Modules**: `https://api.github.com/repos/{owner}/{repo}/releases/latest` (GitHub-hosted)
+- **Composer**: `https://packagist.org/packages/{vendor}/{package}.json`
+- **NuGet**: `https://api.nuget.org/v3-flatcontainer/{package}/index.json`
+- **Homebrew**: `https://formulae.brew.sh/api/formula/{formula}.json`
+- **Nextflow**: `https://api.github.com/repos/nf-core/{pipeline}/releases/latest`
+- **Swift**: `https://api.github.com/repos/{owner}/{repo}/releases/latest`
+- **Maven**: `https://search.maven.org/solrsearch/select?q=g:{group}+AND+a:{artifact}`
 
 ## Performance Considerations
 
@@ -392,6 +422,21 @@ The server queries these endpoints:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v1.2.0
+- **NEW**: Added support for 6 additional package registries:
+  - PHP Composer (Packagist) - `composer`, `php`, `packagist`
+  - .NET NuGet - `nuget`, `dotnet`, `.net`
+  - Homebrew - `homebrew`, `brew`
+  - Nextflow (nf-core) - `nextflow`, `nf-core`
+  - Swift Package Manager - `swift`, `spm`
+  - Maven Central - `maven`, `mvn`
+- **NEW**: Registry-specific MCP tools for all new package managers
+- **IMPROVED**: Enhanced vmcp test client with examples for all 17 registries
+- **IMPROVED**: Comprehensive documentation updates with new API endpoints
+- **IMPROVED**: Updated error messages and validation for new registries
+- **QUALITY**: 56 comprehensive tests - all passing ✅
+- **QUALITY**: Full backward compatibility maintained
 
 ### v1.1.0
 - **NEW**: Added support for 7 additional package registries:

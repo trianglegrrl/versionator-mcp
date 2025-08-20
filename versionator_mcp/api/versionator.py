@@ -579,6 +579,330 @@ async def get_go_version(module_path: str) -> PackageVersion:
             )
 
 
+async def get_composer_version(package_name: str) -> PackageVersion:
+    """
+    Get the latest version of a PHP Composer package from Packagist.
+
+    Args:
+        package_name: The Composer package name (vendor/package format)
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If package name is invalid
+        Exception: If API call fails
+    """
+    if not package_name or not package_name.strip():
+        raise ValueError("Package name cannot be empty")
+
+    package_name = package_name.strip()
+    url = f"https://packagist.org/packages/{package_name}.json"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status == 404:
+                raise Exception(f"Package '{package_name}' not found")
+            elif response.status != 200:
+                text = await response.text()
+                raise Exception(f"Packagist API error {response.status}: {text}")
+
+            data = await response.json()
+            package_info = data.get("package", {})
+
+            # Get the latest version from versions
+            versions = package_info.get("versions", {})
+            if not versions:
+                raise Exception(f"No versions found for package '{package_name}'")
+
+            # Find the latest stable version (not dev)
+            stable_versions = [v for v in versions.keys() if not v.endswith("-dev")]
+            if not stable_versions:
+                # If no stable versions, use the first available
+                latest_version = list(versions.keys())[0]
+            else:
+                # Sort versions and get the latest
+                latest_version = sorted(stable_versions, reverse=True)[0]
+
+            version_data = versions[latest_version]
+
+            return PackageVersion(
+                name=package_name,
+                version=latest_version,
+                registry="composer",
+                registry_url=url,
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=version_data.get("description"),
+                homepage=version_data.get("homepage"),
+                license=(
+                    version_data.get("license", [None])[0] if version_data.get("license") else None
+                ),
+            )
+
+
+async def get_nuget_version(package_name: str) -> PackageVersion:
+    """
+    Get the latest version of a .NET NuGet package.
+
+    Args:
+        package_name: The NuGet package name
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If package name is invalid
+        Exception: If API call fails
+    """
+    if not package_name or not package_name.strip():
+        raise ValueError("Package name cannot be empty")
+
+    package_name = package_name.strip()
+    url = f"https://api.nuget.org/v3-flatcontainer/{package_name.lower()}/index.json"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status == 404:
+                raise Exception(f"Package '{package_name}' not found")
+            elif response.status != 200:
+                text = await response.text()
+                raise Exception(f"NuGet API error {response.status}: {text}")
+
+            data = await response.json()
+            versions = data.get("versions", [])
+
+            if not versions:
+                raise Exception(f"No versions found for package '{package_name}'")
+
+            # Get the latest version (last in the list)
+            latest_version = versions[-1]
+
+            return PackageVersion(
+                name=package_name,
+                version=latest_version,
+                registry="nuget",
+                registry_url=url,
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=f".NET package {package_name}",
+                homepage=f"https://www.nuget.org/packages/{package_name}",
+                license=None,
+            )
+
+
+async def get_homebrew_version(formula_name: str) -> PackageVersion:
+    """
+    Get the latest version of a Homebrew formula.
+
+    Args:
+        formula_name: The Homebrew formula name
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If formula name is invalid
+        Exception: If API call fails
+    """
+    if not formula_name or not formula_name.strip():
+        raise ValueError("Formula name cannot be empty")
+
+    formula_name = formula_name.strip()
+    url = f"https://formulae.brew.sh/api/formula/{formula_name}.json"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status == 404:
+                raise Exception(f"Formula '{formula_name}' not found")
+            elif response.status != 200:
+                text = await response.text()
+                raise Exception(f"Homebrew API error {response.status}: {text}")
+
+            data = await response.json()
+            versions = data.get("versions", {})
+            stable_version = versions.get("stable")
+
+            if not stable_version:
+                raise Exception(f"No stable version found for formula '{formula_name}'")
+
+            return PackageVersion(
+                name=formula_name,
+                version=stable_version,
+                registry="homebrew",
+                registry_url=url,
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=data.get("desc"),
+                homepage=data.get("homepage"),
+                license=data.get("license"),
+            )
+
+
+async def get_nextflow_version(pipeline_name: str) -> PackageVersion:
+    """
+    Get the latest version of a Nextflow pipeline from nf-core (via GitHub).
+
+    Args:
+        pipeline_name: The pipeline name (e.g., "nf-core/rnaseq")
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If pipeline name is invalid
+        Exception: If API call fails
+    """
+    if not pipeline_name or not pipeline_name.strip():
+        raise ValueError("Pipeline name cannot be empty")
+
+    pipeline_name = pipeline_name.strip()
+
+    # Convert nf-core/pipeline to GitHub repo format
+    if pipeline_name.startswith("nf-core/"):
+        repo_path = pipeline_name  # nf-core/rnaseq
+    else:
+        repo_path = f"nf-core/{pipeline_name}"
+
+    url = f"https://api.github.com/repos/{repo_path}/releases/latest"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status == 404:
+                raise Exception(f"Pipeline '{pipeline_name}' not found")
+            elif response.status != 200:
+                text = await response.text()
+                raise Exception(f"GitHub API error {response.status}: {text}")
+
+            data = await response.json()
+            tag_name = data.get("tag_name")
+
+            if not tag_name:
+                raise Exception(f"No release found for pipeline '{pipeline_name}'")
+
+            return PackageVersion(
+                name=pipeline_name,
+                version=tag_name,
+                registry="nextflow",
+                registry_url=url,
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=data.get("body", f"Nextflow pipeline {pipeline_name}"),
+                homepage=f"https://github.com/{repo_path}",
+                license=None,
+            )
+
+
+async def get_swift_version(package_name: str) -> PackageVersion:
+    """
+    Get the latest version of a Swift package (via GitHub releases).
+
+    Args:
+        package_name: The Swift package name (GitHub repo format: owner/repo)
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If package name is invalid
+        Exception: If API call fails
+    """
+    if not package_name or not package_name.strip():
+        raise ValueError("Package name cannot be empty")
+
+    package_name = package_name.strip()
+
+    # Ensure it's in owner/repo format
+    if "/" not in package_name:
+        raise ValueError("Swift package name must be in 'owner/repo' format")
+
+    url = f"https://api.github.com/repos/{package_name}/releases/latest"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status == 404:
+                raise Exception(f"Package '{package_name}' not found")
+            elif response.status != 200:
+                text = await response.text()
+                raise Exception(f"GitHub API error {response.status}: {text}")
+
+            data = await response.json()
+            tag_name = data.get("tag_name")
+
+            if not tag_name:
+                raise Exception(f"No release found for package '{package_name}'")
+
+            return PackageVersion(
+                name=package_name,
+                version=tag_name,
+                registry="swift",
+                registry_url=url,
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=data.get("body", f"Swift package {package_name}"),
+                homepage=f"https://github.com/{package_name}",
+                license=None,
+            )
+
+
+async def get_maven_version(artifact_name: str) -> PackageVersion:
+    """
+    Get the latest version of a Maven Central artifact.
+
+    Args:
+        artifact_name: The Maven artifact name (groupId:artifactId format)
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If artifact name is invalid
+        Exception: If API call fails
+    """
+    if not artifact_name or not artifact_name.strip():
+        raise ValueError("Artifact name cannot be empty")
+
+    artifact_name = artifact_name.strip()
+
+    # Parse groupId:artifactId
+    if ":" not in artifact_name:
+        raise ValueError("Maven artifact name must be in 'groupId:artifactId' format")
+
+    group_id, artifact_id = artifact_name.split(":", 1)
+
+    url = f"https://search.maven.org/solrsearch/select?q=g:{group_id}+AND+a:{artifact_id}&rows=1&wt=json"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                text = await response.text()
+                raise Exception(f"Maven Central API error {response.status}: {text}")
+
+            data = await response.json()
+            docs = data.get("response", {}).get("docs", [])
+
+            if not docs:
+                raise Exception(f"Artifact '{artifact_name}' not found")
+
+            doc = docs[0]
+            latest_version = doc.get("latestVersion")
+
+            if not latest_version:
+                raise Exception(f"No version found for artifact '{artifact_name}'")
+
+            return PackageVersion(
+                name=artifact_name,
+                version=latest_version,
+                registry="maven",
+                registry_url=url,
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=f"Maven artifact {artifact_name}",
+                homepage=f"https://search.maven.org/artifact/{group_id}/{artifact_id}",
+                license=None,
+            )
+
+
 async def get_latest_version(package_manager: str, package_name: str) -> PackageVersion:
     """
     Get the latest version of a package from the specified package manager.
@@ -630,6 +954,21 @@ async def get_latest_version(package_manager: str, package_name: str) -> Package
         "perl": get_cpan_version,
         "go": get_go_version,
         "golang": get_go_version,
+        # v1.2.0 registries
+        "composer": get_composer_version,
+        "php": get_composer_version,
+        "packagist": get_composer_version,
+        "nuget": get_nuget_version,
+        "dotnet": get_nuget_version,
+        ".net": get_nuget_version,
+        "homebrew": get_homebrew_version,
+        "brew": get_homebrew_version,
+        "nextflow": get_nextflow_version,
+        "nf-core": get_nextflow_version,
+        "swift": get_swift_version,
+        "spm": get_swift_version,
+        "maven": get_maven_version,
+        "mvn": get_maven_version,
     }
 
     if package_manager not in registry_map:
@@ -823,4 +1162,82 @@ def register_versionator_api(app: FastMCP) -> None:
             Dictionary containing module version information
         """
         version_info = await get_go_version(module_path)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_php_package(package_name: str) -> Dict[str, Any]:
+        """Get the latest version of a PHP Composer package from Packagist.
+
+        Args:
+            package_name: The Composer package name (vendor/package format)
+
+        Returns:
+            Dictionary containing package version information
+        """
+        version_info = await get_composer_version(package_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_dotnet_package(package_name: str) -> Dict[str, Any]:
+        """Get the latest version of a .NET NuGet package.
+
+        Args:
+            package_name: The NuGet package name
+
+        Returns:
+            Dictionary containing package version information
+        """
+        version_info = await get_nuget_version(package_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_homebrew_formula(formula_name: str) -> Dict[str, Any]:
+        """Get the latest version of a Homebrew formula.
+
+        Args:
+            formula_name: The Homebrew formula name
+
+        Returns:
+            Dictionary containing formula version information
+        """
+        version_info = await get_homebrew_version(formula_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_nextflow_pipeline(pipeline_name: str) -> Dict[str, Any]:
+        """Get the latest version of a Nextflow pipeline from nf-core.
+
+        Args:
+            pipeline_name: The pipeline name (e.g., "nf-core/rnaseq")
+
+        Returns:
+            Dictionary containing pipeline version information
+        """
+        version_info = await get_nextflow_version(pipeline_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_swift_package(package_name: str) -> Dict[str, Any]:
+        """Get the latest version of a Swift package from GitHub.
+
+        Args:
+            package_name: The Swift package name (GitHub repo format: owner/repo)
+
+        Returns:
+            Dictionary containing package version information
+        """
+        version_info = await get_swift_version(package_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_maven_artifact(artifact_name: str) -> Dict[str, Any]:
+        """Get the latest version of a Maven Central artifact.
+
+        Args:
+            artifact_name: The Maven artifact name (groupId:artifactId format)
+
+        Returns:
+            Dictionary containing artifact version information
+        """
+        version_info = await get_maven_version(artifact_name)
         return version_info.model_dump()

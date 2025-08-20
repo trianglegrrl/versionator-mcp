@@ -549,3 +549,235 @@ async def test_get_latest_version_new_registries():
     for alias in go_aliases:
         result = await get_latest_version(alias, "github.com/gin-gonic/gin")
         assert result.registry == "go"
+
+
+# =============================================================================
+# NEW PACKAGE MANAGER TESTS v1.2.0 (TDD - These should FAIL initially)
+# =============================================================================
+
+
+# PHP Composer Tests
+@pytest.mark.asyncio
+async def test_get_composer_version_success():
+    """Test successful Composer version retrieval"""
+    from versionator_mcp.api.versionator import get_composer_version
+
+    result = await get_composer_version("symfony/console")
+    assert result.name == "symfony/console"
+    assert result.version is not None
+    assert result.registry == "composer"
+    assert "packagist.org" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_composer_version_not_found():
+    """Test Composer package not found"""
+    from versionator_mcp.api.versionator import get_composer_version
+
+    with pytest.raises(Exception, match="Package 'nonexistent/package' not found"):
+        await get_composer_version("nonexistent/package")
+
+
+@pytest.mark.asyncio
+async def test_get_composer_version_empty_name():
+    """Test Composer with empty package name"""
+    from versionator_mcp.api.versionator import get_composer_version
+
+    with pytest.raises(ValueError, match="Package name cannot be empty"):
+        await get_composer_version("")
+
+
+# .NET NuGet Tests
+@pytest.mark.asyncio
+async def test_get_nuget_version_success():
+    """Test successful NuGet version retrieval"""
+    from versionator_mcp.api.versionator import get_nuget_version
+
+    result = await get_nuget_version("Newtonsoft.Json")
+    assert result.name == "Newtonsoft.Json"
+    assert result.version is not None
+    assert result.registry == "nuget"
+    assert "nuget.org" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_nuget_version_not_found():
+    """Test NuGet package not found"""
+    from versionator_mcp.api.versionator import get_nuget_version
+
+    with pytest.raises(Exception, match="Package 'NonExistentNuGetPackage' not found"):
+        await get_nuget_version("NonExistentNuGetPackage")
+
+
+@pytest.mark.asyncio
+async def test_get_nuget_version_empty_name():
+    """Test NuGet with empty package name"""
+    from versionator_mcp.api.versionator import get_nuget_version
+
+    with pytest.raises(ValueError, match="Package name cannot be empty"):
+        await get_nuget_version("")
+
+
+# Homebrew Tests
+@pytest.mark.asyncio
+async def test_get_homebrew_version_success():
+    """Test successful Homebrew version retrieval"""
+    from versionator_mcp.api.versionator import get_homebrew_version
+
+    result = await get_homebrew_version("git")
+    assert result.name == "git"
+    assert result.version is not None
+    assert result.registry == "homebrew"
+    assert "formulae.brew.sh" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_homebrew_version_not_found():
+    """Test Homebrew formula not found"""
+    from versionator_mcp.api.versionator import get_homebrew_version
+
+    with pytest.raises(Exception, match="Formula 'nonexistent-formula' not found"):
+        await get_homebrew_version("nonexistent-formula")
+
+
+@pytest.mark.asyncio
+async def test_get_homebrew_version_empty_name():
+    """Test Homebrew with empty formula name"""
+    from versionator_mcp.api.versionator import get_homebrew_version
+
+    with pytest.raises(ValueError, match="Formula name cannot be empty"):
+        await get_homebrew_version("")
+
+
+# Nextflow Tests
+@pytest.mark.asyncio
+async def test_get_nextflow_version_success():
+    """Test successful Nextflow pipeline version retrieval"""
+    from versionator_mcp.api.versionator import get_nextflow_version
+
+    result = await get_nextflow_version("nf-core/rnaseq")
+    assert result.name == "nf-core/rnaseq"
+    assert result.version is not None
+    assert result.registry == "nextflow"
+    assert "github.com" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_nextflow_version_not_found():
+    """Test Nextflow pipeline not found"""
+    from versionator_mcp.api.versionator import get_nextflow_version
+
+    with pytest.raises(Exception, match="Pipeline 'nf-core/nonexistent' not found"):
+        await get_nextflow_version("nf-core/nonexistent")
+
+
+@pytest.mark.asyncio
+async def test_get_nextflow_version_empty_name():
+    """Test Nextflow with empty pipeline name"""
+    from versionator_mcp.api.versionator import get_nextflow_version
+
+    with pytest.raises(ValueError, match="Pipeline name cannot be empty"):
+        await get_nextflow_version("")
+
+
+# Swift Package Manager Tests
+@pytest.mark.asyncio
+async def test_get_swift_version_success():
+    """Test successful Swift Package Manager version retrieval"""
+    from versionator_mcp.api.versionator import get_swift_version
+
+    result = await get_swift_version("apple/swift-package-manager")
+    assert result.name == "apple/swift-package-manager"
+    assert result.version is not None
+    assert result.registry == "swift"
+    assert "github.com" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_swift_version_not_found():
+    """Test Swift package not found"""
+    from versionator_mcp.api.versionator import get_swift_version
+
+    with pytest.raises(Exception, match="Package 'nonexistent/swift-package' not found"):
+        await get_swift_version("nonexistent/swift-package")
+
+
+@pytest.mark.asyncio
+async def test_get_swift_version_empty_name():
+    """Test Swift Package Manager with empty package name"""
+    from versionator_mcp.api.versionator import get_swift_version
+
+    with pytest.raises(ValueError, match="Package name cannot be empty"):
+        await get_swift_version("")
+
+
+# Maven Central Tests
+@pytest.mark.asyncio
+async def test_get_maven_version_success():
+    """Test successful Maven Central version retrieval"""
+    from versionator_mcp.api.versionator import get_maven_version
+
+    result = await get_maven_version("org.springframework:spring-core")
+    assert result.name == "org.springframework:spring-core"
+    assert result.version is not None
+    assert result.registry == "maven"
+    assert "search.maven.org" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_maven_version_not_found():
+    """Test Maven Central artifact not found"""
+    from versionator_mcp.api.versionator import get_maven_version
+
+    with pytest.raises(Exception, match="Artifact 'com.nonexistent:artifact' not found"):
+        await get_maven_version("com.nonexistent:artifact")
+
+
+@pytest.mark.asyncio
+async def test_get_maven_version_empty_name():
+    """Test Maven Central with empty artifact name"""
+    from versionator_mcp.api.versionator import get_maven_version
+
+    with pytest.raises(ValueError, match="Artifact name cannot be empty"):
+        await get_maven_version("")
+
+
+# Generic function tests for v1.2.0 registries
+@pytest.mark.asyncio
+async def test_get_latest_version_v12_registries():
+    """Test get_latest_version with v1.2.0 registry aliases"""
+    # Test PHP Composer aliases
+    composer_aliases = ["composer", "php", "packagist"]
+    for alias in composer_aliases:
+        result = await get_latest_version(alias, "symfony/console")
+        assert result.registry == "composer"
+
+    # Test .NET NuGet aliases
+    nuget_aliases = ["nuget", "dotnet", ".net"]
+    for alias in nuget_aliases:
+        result = await get_latest_version(alias, "Newtonsoft.Json")
+        assert result.registry == "nuget"
+
+    # Test Homebrew aliases
+    homebrew_aliases = ["homebrew", "brew"]
+    for alias in homebrew_aliases:
+        result = await get_latest_version(alias, "git")
+        assert result.registry == "homebrew"
+
+    # Test Nextflow aliases
+    nextflow_aliases = ["nextflow", "nf-core"]
+    for alias in nextflow_aliases:
+        result = await get_latest_version(alias, "nf-core/rnaseq")
+        assert result.registry == "nextflow"
+
+    # Test Swift aliases
+    swift_aliases = ["swift", "spm"]
+    for alias in swift_aliases:
+        result = await get_latest_version(alias, "apple/swift-package-manager")
+        assert result.registry == "swift"
+
+    # Test Maven aliases
+    maven_aliases = ["maven", "mvn"]
+    for alias in maven_aliases:
+        result = await get_latest_version(alias, "org.springframework:spring-core")
+        assert result.registry == "maven"
