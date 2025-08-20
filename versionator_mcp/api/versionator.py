@@ -812,7 +812,7 @@ async def get_nfcore_module_version(module_name: str) -> PackageVersion:
 
     module_name = module_name.strip()
     module_path = f"modules/nf-core/{module_name}"
-    
+
     # Check if module exists and get latest commit
     url = f"https://api.github.com/repos/nf-core/modules/commits?path={module_path}&per_page=1"
 
@@ -824,14 +824,14 @@ async def get_nfcore_module_version(module_name: str) -> PackageVersion:
                 raise Exception(f"GitHub API error {response.status}: {text}")
 
             data = await response.json()
-            
+
             if not data:
                 raise Exception(f"Module '{module_name}' not found in nf-core/modules")
-            
+
             latest_commit = data[0]
             commit_sha = latest_commit["sha"][:7]  # Short SHA
             commit_date = latest_commit["commit"]["author"]["date"]
-            commit_message = latest_commit["commit"]["message"].split('\n')[0]  # First line only
+            commit_message = latest_commit["commit"]["message"].split("\n")[0]  # First line only
 
             return PackageVersion(
                 name=f"nf-core/{module_name}",
@@ -864,7 +864,7 @@ async def get_nfcore_subworkflow_version(subworkflow_name: str) -> PackageVersio
 
     subworkflow_name = subworkflow_name.strip()
     subworkflow_path = f"subworkflows/nf-core/{subworkflow_name}"
-    
+
     # Check if subworkflow exists and get latest commit
     url = f"https://api.github.com/repos/nf-core/modules/commits?path={subworkflow_path}&per_page=1"
 
@@ -876,14 +876,14 @@ async def get_nfcore_subworkflow_version(subworkflow_name: str) -> PackageVersio
                 raise Exception(f"GitHub API error {response.status}: {text}")
 
             data = await response.json()
-            
+
             if not data:
                 raise Exception(f"Subworkflow '{subworkflow_name}' not found in nf-core/modules")
-            
+
             latest_commit = data[0]
             commit_sha = latest_commit["sha"][:7]  # Short SHA
             commit_date = latest_commit["commit"]["author"]["date"]
-            commit_message = latest_commit["commit"]["message"].split('\n')[0]  # First line only
+            commit_message = latest_commit["commit"]["message"].split("\n")[0]  # First line only
 
             return PackageVersion(
                 name=f"nf-core/{subworkflow_name}",
