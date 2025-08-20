@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "versionator-mcp"
-version = "1.2.2"
+version = "1.2.3"
 description = "An MCP server that queries package registries across 19 different ecosystems for latest package versions"
 readme = "README.md"
 license = {text = "MIT"}
