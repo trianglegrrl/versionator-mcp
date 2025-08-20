@@ -12,8 +12,7 @@ import pytest
 
 # Skip tests that hit GitHub API during CI to avoid rate limits
 skip_github_api = pytest.mark.skipif(
-    os.getenv("CI") == "true",
-    reason="Skip GitHub API tests in CI to avoid rate limits"
+    os.getenv("CI") == "true", reason="Skip GitHub API tests in CI to avoid rate limits"
 )
 
 from versionator_mcp.api.versionator import (
