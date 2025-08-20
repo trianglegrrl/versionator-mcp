@@ -5,44 +5,47 @@ on:
     types: [published]
 
 jobs:
-  check-ci:
-    name: Check CI Status on Main
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
-    outputs:
-      ci-passed: ${{ steps.check-status.outputs.ci-passed }}
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-    - name: Check CI status on main branch
-      id: check-status
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
       run: |
-        # Get the latest CI run for main branch
-        latest_run=$(gh api repos/${{ github.repository }}/actions/workflows/ci.yml/runs \
-          --jq '.workflow_runs | map(select(.head_branch == "main")) | .[0]')
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
 
-        if [ "$latest_run" = "null" ]; then
-          echo "No CI runs found for main branch"
-          echo "ci-passed=false" >> $GITHUB_OUTPUT
-          exit 1
-        fi
+    - name: Lint with black
+      run: |
+        black --check --diff .
 
-        status=$(echo "$latest_run" | jq -r '.conclusion')
-        echo "Latest CI status on main: $status"
+    - name: Sort imports with isort
+      run: |
+        isort --check-only --diff .
 
-        if [ "$status" = "success" ]; then
-          echo "ci-passed=true" >> $GITHUB_OUTPUT
-          echo "✅ CI is passing on main branch"
-        else
-          echo "ci-passed=false" >> $GITHUB_OUTPUT
-          echo "❌ CI is not passing on main branch (status: $status)"
-          exit 1
-        fi
+    - name: Type check with mypy
+      run: |
+        mypy versionator_mcp/
+
+    - name: Run tests with pytest
+      run: |
+        pytest tests/ -v --cov=versionator_mcp --cov-report=xml --cov-report=term-missing
 
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
-    needs: check-ci
+    needs: test
 
     steps:
     - uses: actions/checkout@v4
