@@ -548,6 +548,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### v1.3.1 (Release Process Fix)
+- **FIXED**: GitHub Release creation process for automated PyPI publishing
+- **IMPROVED**: Proper workflow trigger configuration for seamless releases
+- **MAINTAINED**: All v1.3.0 features and improvements included
+
 ### v1.3.0 (Refactored Architecture & Type Safety)
 - **REFACTORED**: Complete codebase restructure for improved maintainability
 - **NEW**: Modular registry architecture with individual files for each package manager
