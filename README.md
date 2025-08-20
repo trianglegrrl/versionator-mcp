@@ -364,6 +364,98 @@ cd versionator-mcp
 pip install -e ".[dev]"
 ```
 
+### Project Structure
+
+The project follows a clean, modular architecture:
+
+```
+versionator_mcp/
+├── __init__.py
+├── app.py                    # FastMCP app factory and configuration
+├── config.py                 # Environment configuration management
+├── main.py                   # Entry point for the MCP server
+├── models.py                 # Pydantic data models
+├── core/                     # Core utilities and base classes
+│   ├── __init__.py
+│   ├── base_registry.py      # Abstract base class for registries
+│   ├── http_client.py        # Shared HTTP client utilities
+│   └── registry_factory.py   # Registry factory and mapping
+├── registries/               # Individual registry implementations
+│   ├── __init__.py
+│   ├── npm.py               # NPM registry
+│   ├── rubygems.py          # RubyGems registry
+│   ├── pypi.py              # PyPI registry
+│   ├── hex.py               # Hex.pm registry
+│   ├── crates.py            # Crates.io registry
+│   ├── bioconda.py          # Bioconda registry
+│   ├── cran.py              # CRAN registry
+│   ├── terraform.py         # Terraform registry
+│   ├── dockerhub.py         # DockerHub registry
+│   ├── cpan.py              # CPAN registry
+│   ├── go.py                # Go modules registry
+│   ├── composer.py          # PHP Composer registry
+│   ├── nuget.py             # NuGet registry
+│   ├── homebrew.py          # Homebrew registry
+│   ├── nextflow.py          # Nextflow registry
+│   ├── nfcore.py            # nf-core modules/subworkflows
+│   ├── swift.py             # Swift Package Manager
+│   └── maven.py             # Maven Central
+└── tools/                   # MCP tool registration
+    ├── __init__.py
+    └── registry_tools.py     # MCP tool definitions
+```
+
+### Architecture Benefits
+
+- **Modular Design**: Each registry is implemented in its own file with a consistent interface
+- **Single Responsibility**: Each module has a clear, focused purpose
+- **Easy Extension**: Adding new registries requires minimal changes to existing code
+- **Testability**: Individual registries can be tested in isolation
+- **Maintainability**: Changes to one registry don't affect others
+- **DRY Principle**: Common HTTP logic is shared across all registries
+
+### Adding New Registries
+
+To add support for a new package registry:
+
+1. **Create Registry Implementation**: Create a new file in `versionator_mcp/registries/` (e.g., `new_registry.py`)
+2. **Extend BaseRegistry**: Implement the abstract methods from `BaseRegistry`
+3. **Register with Factory**: Call `register_registry()` with your class and aliases
+4. **Add MCP Tool**: Add corresponding tool function in `registry_tools.py`
+
+Example:
+
+```python
+# versionator_mcp/registries/new_registry.py
+from ..core import BaseRegistry, register_registry
+from ..models import PackageVersion
+
+class NewRegistry(BaseRegistry):
+    @property
+    def registry_name(self) -> str:
+        return "new_registry"
+
+    async def get_latest_version(self, package_name: str) -> PackageVersion:
+        package_name = self.validate_package_name(package_name)
+        url = f"https://api.new-registry.com/packages/{package_name}"
+
+        data = await self.http_client.get_json(url, registry_name="NewRegistry", package_name=package_name)
+
+        return PackageVersion(
+            name=package_name,
+            version=data.get("version", "unknown"),
+            registry="new_registry",
+            registry_url=url,
+            query_time=self.http_client.get_current_timestamp(),
+            description=data.get("description"),
+            homepage=data.get("homepage"),
+            license=data.get("license"),
+        )
+
+# Register with aliases
+register_registry(NewRegistry, ["new", "nr"])
+```
+
 ### Pre-commit Hooks (Recommended)
 
 This project uses pre-commit hooks to ensure code quality and prevent issues:
@@ -455,6 +547,29 @@ The server queries these endpoints:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v1.3.0 (Refactored Architecture & Type Safety)
+- **REFACTORED**: Complete codebase restructure for improved maintainability
+- **NEW**: Modular registry architecture with individual files for each package manager
+- **NEW**: Abstract base class pattern for consistent registry implementations
+- **NEW**: Factory pattern for registry management and discovery
+- **NEW**: Shared HTTP client utilities to eliminate code duplication
+- **NEW**: Modular test structure mirroring the main codebase organization
+- **IMPROVED**: 100% type safety compliance - zero mypy errors across 30 source files
+- **IMPROVED**: Enhanced type annotations throughout the entire codebase
+- **IMPROVED**: HTTP client return type flexibility for diverse API responses
+- **IMPROVED**: Proper forward reference handling for type checking
+- **IMPROVED**: Registry factory type safety with Optional parameter handling
+- **IMPROVED**: Separation of concerns - MCP tools, registries, and core utilities
+- **IMPROVED**: Easy extensibility - adding new registries requires minimal code changes
+- **IMPROVED**: Better testability with isolated registry implementations
+- **IMPROVED**: Consistent error handling across all registries
+- **IMPROVED**: Developer experience with clear project structure and full IDE type support
+- **MAINTAINED**: Full backward compatibility - all existing functionality preserved
+- **MAINTAINED**: All 19 package registries with identical behavior
+- **MAINTAINED**: Complete MCP tool compatibility
+- **QUALITY**: 56 comprehensive tests passing with 6 appropriately skipped in CI
+- **QUALITY**: Organized test structure with individual files per registry
 
 ### v1.2.3
 - **FIXED**: GitHub API rate limit issues in CI by skipping GitHub-dependent tests

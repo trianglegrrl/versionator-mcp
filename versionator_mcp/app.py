@@ -32,6 +32,11 @@ def create_app() -> FastMCP:
             # Get configuration
             config = get_config()
 
+            # Set timeout in HTTP client
+            from .core.http_client import HTTPClient
+
+            HTTPClient._default_timeout = config.request_timeout
+
             logger.info(f"Versionator MCP Server starting...")
             logger.info(f"Request timeout: {config.request_timeout}s")
             logger.info(
@@ -83,10 +88,13 @@ def create_app() -> FastMCP:
     # Create the FastMCP application
     app = FastMCP("versionator-mcp-server", instructions=instructions, lifespan=lifespan)
 
-    # Import and register API functions
-    from .api.versionator import register_versionator_api
+    # Import registries to trigger registration
+    from . import registries  # noqa: F401
 
-    register_versionator_api(app)
+    # Import and register MCP tools
+    from .tools import register_versionator_tools
+
+    register_versionator_tools(app)
 
     # Add health check endpoint
     @app.tool()
