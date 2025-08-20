@@ -62,20 +62,20 @@ async def get_{registry}_version(package_name: str) -> PackageVersion:
     """Get the latest version of a package from {Registry}."""
     if not package_name or not package_name.strip():
         raise ValueError("Package name cannot be empty")
-    
+
     package_name = package_name.strip()
-    
+
     async with aiohttp.ClientSession() as session:
         url = f"https://api.{registry}.com/packages/{package_name}"
-        
+
         async with session.get(url) as response:
             if response.status == 404:
                 raise Exception(f"Package '{package_name}' not found in {registry}")
             elif response.status != 200:
                 raise Exception(f"Failed to fetch package info: HTTP {response.status}")
-            
+
             data = await response.json()
-            
+
             return PackageVersion(
                 name=package_name,
                 version=data["version"],  # Adjust based on API response

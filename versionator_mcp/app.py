@@ -35,10 +35,10 @@ def create_app() -> FastMCP:
             logger.info(f"Versionator MCP Server starting...")
             logger.info(f"Request timeout: {config.request_timeout}s")
             logger.info(
-                f"Supported registries: npm, rubygems, pypi, hex, crates, bioconda, cran, terraform, dockerhub, cpan, go, composer, nuget, homebrew, nextflow, swift, maven"
+                f"Supported registries: npm, rubygems, pypi, hex, crates, bioconda, cran, terraform, dockerhub, cpan, go, composer, nuget, homebrew, nextflow, nf-core-module, nf-core-subworkflow, swift, maven"
             )
             logger.info(
-                f"Available functions: get_package_version, get_npm_package, get_ruby_gem, get_python_package, get_elixir_package, get_rust_crate, get_bioconda_package, get_r_package, get_terraform_provider, get_docker_image, get_perl_module, get_go_module, get_php_package, get_dotnet_package, get_homebrew_formula, get_nextflow_pipeline, get_swift_package, get_maven_artifact"
+                f"Available functions: get_package_version, get_npm_package, get_ruby_gem, get_python_package, get_elixir_package, get_rust_crate, get_bioconda_package, get_r_package, get_terraform_provider, get_docker_image, get_perl_module, get_go_module, get_php_package, get_dotnet_package, get_homebrew_formula, get_nextflow_pipeline, get_nfcore_module, get_nfcore_subworkflow, get_swift_package, get_maven_artifact"
             )
 
             yield
@@ -71,9 +71,11 @@ def create_app() -> FastMCP:
         "   - get_dotnet_package(package_name) for .NET/NuGet packages\n"
         "   - get_homebrew_formula(formula_name) for Homebrew formulas\n"
         "   - get_nextflow_pipeline(pipeline_name) for Nextflow pipelines\n"
+        "   - get_nfcore_module(module_name) for nf-core modules\n"
+        "   - get_nfcore_subworkflow(subworkflow_name) for nf-core subworkflows\n"
         "   - get_swift_package(package_name) for Swift packages\n"
         "   - get_maven_artifact(artifact_name) for Maven artifacts\n"
-        "4) Supported package managers: npm, rubygems, pypi, hex, crates, bioconda, cran, terraform, dockerhub, cpan, go, composer, nuget, homebrew, nextflow, swift, maven\n"
+        "4) Supported package managers: npm, rubygems, pypi, hex, crates, bioconda, cran, terraform, dockerhub, cpan, go, composer, nuget, homebrew, nextflow, nf-core-module, nf-core-subworkflow, swift, maven\n"
         "5) Always specify the exact package name you want to query.\n"
         "6) Present version information clearly with package name, version, and registry.\n"
     )

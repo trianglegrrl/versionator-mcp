@@ -781,3 +781,77 @@ async def test_get_latest_version_v12_registries():
     for alias in maven_aliases:
         result = await get_latest_version(alias, "org.springframework:spring-core")
         assert result.registry == "maven"
+
+    # Test nf-core module aliases
+    nfcore_module_aliases = ["nf-core-module", "nfcore-module", "nf-module"]
+    for alias in nfcore_module_aliases:
+        result = await get_latest_version(alias, "fastqc")
+        assert result.registry == "nf-core-module"
+
+    # Test nf-core subworkflow aliases
+    nfcore_subworkflow_aliases = ["nf-core-subworkflow", "nfcore-subworkflow", "nf-subworkflow"]
+    for alias in nfcore_subworkflow_aliases:
+        result = await get_latest_version(alias, "bam_sort_stats_samtools")
+        assert result.registry == "nf-core-subworkflow"
+
+
+# nf-core Module Tests
+@pytest.mark.asyncio
+async def test_get_nfcore_module_version_success():
+    """Test successful nf-core module version retrieval"""
+    from versionator_mcp.api.versionator import get_nfcore_module_version
+
+    result = await get_nfcore_module_version("fastqc")
+    assert result.name == "nf-core/fastqc"
+    assert result.version is not None
+    assert result.registry == "nf-core-module"
+    assert "nf-core/modules" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_nfcore_module_version_not_found():
+    """Test nf-core module not found"""
+    from versionator_mcp.api.versionator import get_nfcore_module_version
+
+    with pytest.raises(Exception, match="Module 'nonexistent-module-12345' not found"):
+        await get_nfcore_module_version("nonexistent-module-12345")
+
+
+@pytest.mark.asyncio
+async def test_get_nfcore_module_version_empty_name():
+    """Test nf-core module with empty module name"""
+    from versionator_mcp.api.versionator import get_nfcore_module_version
+
+    with pytest.raises(ValueError, match="Module name cannot be empty"):
+        await get_nfcore_module_version("")
+
+
+# nf-core Subworkflow Tests
+@pytest.mark.asyncio
+async def test_get_nfcore_subworkflow_version_success():
+    """Test successful nf-core subworkflow version retrieval"""
+    from versionator_mcp.api.versionator import get_nfcore_subworkflow_version
+
+    result = await get_nfcore_subworkflow_version("bam_sort_stats_samtools")
+    assert result.name == "nf-core/bam_sort_stats_samtools"
+    assert result.version is not None
+    assert result.registry == "nf-core-subworkflow"
+    assert "nf-core/modules" in result.registry_url
+
+
+@pytest.mark.asyncio
+async def test_get_nfcore_subworkflow_version_not_found():
+    """Test nf-core subworkflow not found"""
+    from versionator_mcp.api.versionator import get_nfcore_subworkflow_version
+
+    with pytest.raises(Exception, match="Subworkflow 'nonexistent-subworkflow-12345' not found"):
+        await get_nfcore_subworkflow_version("nonexistent-subworkflow-12345")
+
+
+@pytest.mark.asyncio
+async def test_get_nfcore_subworkflow_version_empty_name():
+    """Test nf-core subworkflow with empty subworkflow name"""
+    from versionator_mcp.api.versionator import get_nfcore_subworkflow_version
+
+    with pytest.raises(ValueError, match="Subworkflow name cannot be empty"):
+        await get_nfcore_subworkflow_version("")

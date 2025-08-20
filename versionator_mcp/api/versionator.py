@@ -793,6 +793,110 @@ async def get_nextflow_version(pipeline_name: str) -> PackageVersion:
             )
 
 
+async def get_nfcore_module_version(module_name: str) -> PackageVersion:
+    """
+    Get the latest version of an nf-core module from the nf-core/modules repository.
+
+    Args:
+        module_name: The module name (e.g., "fastqc", "bwa/mem")
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If module name is invalid
+        Exception: If API call fails
+    """
+    if not module_name or not module_name.strip():
+        raise ValueError("Module name cannot be empty")
+
+    module_name = module_name.strip()
+    module_path = f"modules/nf-core/{module_name}"
+    
+    # Check if module exists and get latest commit
+    url = f"https://api.github.com/repos/nf-core/modules/commits?path={module_path}&per_page=1"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                text = await response.text()
+                raise Exception(f"GitHub API error {response.status}: {text}")
+
+            data = await response.json()
+            
+            if not data:
+                raise Exception(f"Module '{module_name}' not found in nf-core/modules")
+            
+            latest_commit = data[0]
+            commit_sha = latest_commit["sha"][:7]  # Short SHA
+            commit_date = latest_commit["commit"]["author"]["date"]
+            commit_message = latest_commit["commit"]["message"].split('\n')[0]  # First line only
+
+            return PackageVersion(
+                name=f"nf-core/{module_name}",
+                version=commit_sha,
+                registry="nf-core-module",
+                registry_url=f"https://github.com/nf-core/modules/tree/master/{module_path}",
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=f"nf-core module: {commit_message}",
+                homepage=f"https://github.com/nf-core/modules/tree/master/{module_path}",
+                license=None,
+            )
+
+
+async def get_nfcore_subworkflow_version(subworkflow_name: str) -> PackageVersion:
+    """
+    Get the latest version of an nf-core subworkflow from the nf-core/modules repository.
+
+    Args:
+        subworkflow_name: The subworkflow name (e.g., "bam_sort_stats_samtools")
+
+    Returns:
+        PackageVersion with the latest version information
+
+    Raises:
+        ValueError: If subworkflow name is invalid
+        Exception: If API call fails
+    """
+    if not subworkflow_name or not subworkflow_name.strip():
+        raise ValueError("Subworkflow name cannot be empty")
+
+    subworkflow_name = subworkflow_name.strip()
+    subworkflow_path = f"subworkflows/nf-core/{subworkflow_name}"
+    
+    # Check if subworkflow exists and get latest commit
+    url = f"https://api.github.com/repos/nf-core/modules/commits?path={subworkflow_path}&per_page=1"
+
+    timeout = aiohttp.ClientTimeout(total=_request_timeout)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                text = await response.text()
+                raise Exception(f"GitHub API error {response.status}: {text}")
+
+            data = await response.json()
+            
+            if not data:
+                raise Exception(f"Subworkflow '{subworkflow_name}' not found in nf-core/modules")
+            
+            latest_commit = data[0]
+            commit_sha = latest_commit["sha"][:7]  # Short SHA
+            commit_date = latest_commit["commit"]["author"]["date"]
+            commit_message = latest_commit["commit"]["message"].split('\n')[0]  # First line only
+
+            return PackageVersion(
+                name=f"nf-core/{subworkflow_name}",
+                version=commit_sha,
+                registry="nf-core-subworkflow",
+                registry_url=f"https://github.com/nf-core/modules/tree/master/{subworkflow_path}",
+                query_time=datetime.now(timezone.utc).isoformat() + "Z",
+                description=f"nf-core subworkflow: {commit_message}",
+                homepage=f"https://github.com/nf-core/modules/tree/master/{subworkflow_path}",
+                license=None,
+            )
+
+
 async def get_swift_version(package_name: str) -> PackageVersion:
     """
     Get the latest version of a Swift package (via GitHub releases).
@@ -965,6 +1069,12 @@ async def get_latest_version(package_manager: str, package_name: str) -> Package
         "brew": get_homebrew_version,
         "nextflow": get_nextflow_version,
         "nf-core": get_nextflow_version,
+        "nf-core-module": get_nfcore_module_version,
+        "nfcore-module": get_nfcore_module_version,
+        "nf-module": get_nfcore_module_version,
+        "nf-core-subworkflow": get_nfcore_subworkflow_version,
+        "nfcore-subworkflow": get_nfcore_subworkflow_version,
+        "nf-subworkflow": get_nfcore_subworkflow_version,
         "swift": get_swift_version,
         "spm": get_swift_version,
         "maven": get_maven_version,
@@ -1214,6 +1324,32 @@ def register_versionator_api(app: FastMCP) -> None:
             Dictionary containing pipeline version information
         """
         version_info = await get_nextflow_version(pipeline_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_nfcore_module(module_name: str) -> Dict[str, Any]:
+        """Get the latest version of an nf-core module.
+
+        Args:
+            module_name: The module name (e.g., "fastqc", "bwa/mem")
+
+        Returns:
+            Dictionary containing module version information
+        """
+        version_info = await get_nfcore_module_version(module_name)
+        return version_info.model_dump()
+
+    @app.tool()
+    async def get_nfcore_subworkflow(subworkflow_name: str) -> Dict[str, Any]:
+        """Get the latest version of an nf-core subworkflow.
+
+        Args:
+            subworkflow_name: The subworkflow name (e.g., "bam_sort_stats_samtools")
+
+        Returns:
+            Dictionary containing subworkflow version information
+        """
+        version_info = await get_nfcore_subworkflow_version(subworkflow_name)
         return version_info.model_dump()
 
     @app.tool()

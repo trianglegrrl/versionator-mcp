@@ -4,11 +4,11 @@
 [![PyPI version](https://badge.fury.io/py/versionator-mcp.svg)](https://badge.fury.io/py/versionator-mcp)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-An MCP (Model Context Protocol) server that queries package registries across 17 different ecosystems to retrieve the latest release versions of packages. It follows a strict fail-hard policy and always returns current data.
+An MCP (Model Context Protocol) server that queries package registries across 19 different ecosystems to retrieve the latest release versions of packages. It follows a strict fail-hard policy and always returns current data.
 
 ## Features
 
-- **17 Package Registries**: npm, RubyGems, PyPI, Hex.pm, crates.io, Bioconda, CRAN, Terraform Registry, DockerHub, CPAN, Go modules, Composer, NuGet, Homebrew, Nextflow, Swift Package Manager, Maven Central
+- **19 Package Registries**: npm, RubyGems, PyPI, Hex.pm, crates.io, Bioconda, CRAN, Terraform Registry, DockerHub, CPAN, Go modules, Composer, NuGet, Homebrew, Nextflow, nf-core modules, nf-core subworkflows, Swift Package Manager, Maven Central
 - **Language/Ecosystem Aliases**: Use familiar names like `python`, `rust`, `go`, etc.
 - **No Caching**: Always returns current latest version
 - **Fail-Hard Error Handling**: No fallbacks or stale data
@@ -160,6 +160,8 @@ Query the latest version from any supported registry.
 - `nuget` (aliases: `dotnet`, `.net`) - .NET packages
 - `homebrew` (aliases: `brew`) - macOS packages
 - `nextflow` (aliases: `nf-core`) - Nextflow pipelines
+- `nf-core-module` (aliases: `nfcore-module`, `nf-module`) - nf-core modules
+- `nf-core-subworkflow` (aliases: `nfcore-subworkflow`, `nf-subworkflow`) - nf-core subworkflows
 - `swift` (aliases: `spm`) - Swift packages
 - `maven` (aliases: `mvn`) - Java artifacts
 
@@ -180,6 +182,8 @@ get_package_version("php", "symfony/console")
 get_package_version("dotnet", "Newtonsoft.Json")
 get_package_version("homebrew", "git")
 get_package_version("nextflow", "nf-core/rnaseq")
+get_package_version("nf-core-module", "fastqc")
+get_package_version("nf-core-subworkflow", "bam_sort_stats_samtools")
 get_package_version("swift", "apple/swift-package-manager")
 get_package_version("maven", "org.springframework:spring-core")
 ```
@@ -201,6 +205,8 @@ get_package_version("maven", "org.springframework:spring-core")
 - `get_dotnet_package(package_name)` - .NET/NuGet packages
 - `get_homebrew_formula(formula_name)` - Homebrew formulas
 - `get_nextflow_pipeline(pipeline_name)` - Nextflow pipelines
+- `get_nfcore_module(module_name)` - nf-core modules
+- `get_nfcore_subworkflow(subworkflow_name)` - nf-core subworkflows
 - `get_swift_package(package_name)` - Swift packages
 - `get_maven_artifact(artifact_name)` - Maven artifacts
 
@@ -245,6 +251,8 @@ chmod +x vmcp
 ./vmcp dotnet Newtonsoft.Json # Query NuGet for .NET packages
 ./vmcp homebrew git           # Query Homebrew formulas
 ./vmcp nextflow nf-core/rnaseq # Query Nextflow pipelines
+./vmcp nf-core-module fastqc  # Query nf-core modules
+./vmcp nf-core-subworkflow bam_sort_stats_samtools # Query nf-core subworkflows
 ./vmcp swift apple/swift-package-manager # Query Swift packages
 ./vmcp maven org.springframework:spring-core # Query Maven Central
 
@@ -407,6 +415,8 @@ The server queries these endpoints:
 - **NuGet**: `https://api.nuget.org/v3-flatcontainer/{package}/index.json`
 - **Homebrew**: `https://formulae.brew.sh/api/formula/{formula}.json`
 - **Nextflow**: `https://api.github.com/repos/nf-core/{pipeline}/releases/latest`
+- **nf-core modules**: `https://api.github.com/repos/nf-core/modules/commits?path=modules/nf-core/{module}`
+- **nf-core subworkflows**: `https://api.github.com/repos/nf-core/modules/commits?path=subworkflows/nf-core/{subworkflow}`
 - **Swift**: `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 - **Maven**: `https://search.maven.org/solrsearch/select?q=g:{group}+AND+a:{artifact}`
 
@@ -422,6 +432,18 @@ The server queries these endpoints:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v1.2.1
+- **NEW**: Added support for nf-core modules and subworkflows:
+  - **nf-core modules** - `nf-core-module`, `nfcore-module`, `nf-module`
+  - **nf-core subworkflows** - `nf-core-subworkflow`, `nfcore-subworkflow`, `nf-subworkflow`
+- **NEW**: Registry-specific MCP tools:
+  - `get_nfcore_module(module_name)` for nf-core modules
+  - `get_nfcore_subworkflow(subworkflow_name)` for nf-core subworkflows
+- **IMPROVED**: Enhanced Nextflow ecosystem coverage for scientific computing
+- **IMPROVED**: Updated documentation with nf-core module/subworkflow examples
+- **QUALITY**: 62 comprehensive tests - all passing ✅
+- **QUALITY**: Full backward compatibility maintained
 
 ### v1.2.0
 - **NEW**: Added support for 6 additional package registries:
