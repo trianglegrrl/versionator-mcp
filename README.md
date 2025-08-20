@@ -433,6 +433,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### v1.2.2
+- **FIXED**: Black code formatting compliance for nf-core functions
+- **IMPROVED**: CI/CD pipeline reliability with direct test execution in publish workflow
+- **ENHANCED**: Eliminated race condition between CI status checking and PyPI publish
+- All features from v1.2.1 included with formatting fixes
+
 ### v1.2.1
 - **NEW**: Added support for nf-core modules and subworkflows:
   - **nf-core modules** - `nf-core-module`, `nfcore-module`, `nf-module`
