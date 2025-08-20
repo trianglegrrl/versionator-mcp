@@ -364,6 +364,29 @@ cd versionator-mcp
 pip install -e ".[dev]"
 ```
 
+### Pre-commit Hooks (Recommended)
+
+This project uses pre-commit hooks to ensure code quality and prevent issues:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+pre-commit install --hook-type pre-push
+
+# Run hooks manually on all files
+pre-commit run --all-files
+```
+
+**Pre-commit hooks** (run on `git commit`):
+- Trailing whitespace removal, end-of-file fixing, YAML validation
+- Large file detection, merge conflict detection, debug statement detection
+- **Black** code formatting, **isort** import sorting, **mypy** type checking
+
+**Pre-push hooks** (run on `git push`):
+- **pytest** test suite (skips GitHub API tests to avoid rate limits)
+
+The hooks automatically fix formatting issues when possible and prevent commits/pushes that don't meet quality standards.
+
 ### Running Tests
 
 ```bash
@@ -435,7 +458,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### v1.2.3
 - **FIXED**: GitHub API rate limit issues in CI by skipping GitHub-dependent tests
-- **IMPROVED**: CI reliability - 47 tests pass, 15 appropriately skipped in CI environment  
+- **IMPROVED**: CI reliability - 47 tests pass, 15 appropriately skipped in CI environment
 - **ENHANCED**: Maintains full test coverage locally while ensuring green CI builds
 - **QUALITY**: Resolves PyPI publish workflow failures caused by rate limiting
 - All features from v1.2.2 included with CI reliability improvements
